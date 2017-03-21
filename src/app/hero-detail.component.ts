@@ -1,8 +1,10 @@
-import { Component, Input, OnChanges }       from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { Component, Input, OnChanges, ViewChild }       from '@angular/core';
+import { FormArray, FormBuilder, FormGroup }            from '@angular/forms';
 
 import { Address, Hero, states } from './data-model';
 import { HeroService }           from './hero.service';
+
+import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
 
 @Component({
   selector: 'hero-detail',
@@ -14,6 +16,9 @@ export class HeroDetailComponent implements OnChanges {
   heroForm: FormGroup;
   nameChangeLog: string[] = [];
   states = states;
+
+  @ViewChild('modal') modal: ModalComponent;
+  private _formSnapshot: {}; 
 
   constructor(
     private fb: FormBuilder,
@@ -51,6 +56,23 @@ export class HeroDetailComponent implements OnChanges {
 
   addLair() {
     this.secretLairs.push(this.fb.group(new Address()));
+  }
+
+  onClose() {
+    this.modal.close();
+  }
+
+  onDismiss(i: number) {
+    for (let control in this.heroForm.controls['secretLairs']['controls'][i].controls) {
+      this.heroForm.controls['secretLairs']['controls'][i].controls[control].setValue(this._formSnapshot[control]);
+    }
+    this.modal.dismiss();
+  }
+
+  onOpenModal(i:number) {
+    const formModel = this.heroForm.value;
+    this._formSnapshot = formModel.secretLairs[i];
+    this.modal.open();
   }
 
   onSubmit() {

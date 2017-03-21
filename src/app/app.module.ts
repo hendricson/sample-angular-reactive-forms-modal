@@ -8,10 +8,13 @@ import { HeroListComponent }   from './hero-list.component';
 
 import { HeroService }         from './hero.service'; //  <-- #1 import service
 
+import { Ng2Bs3ModalModule } from 'ng2-bs3-modal/ng2-bs3-modal';
+
 @NgModule({
   imports: [
     BrowserModule,
-    ReactiveFormsModule // <-- #2 add to Angular module imports
+    ReactiveFormsModule, // <-- #2 add to Angular module imports
+    Ng2Bs3ModalModule
   ],
   declarations: [
     AppComponent,
