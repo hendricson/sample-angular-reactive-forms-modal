@@ -1,9 +1,9 @@
 <form [formGroup]="heroForm" (ngSubmit)="onSubmit()" novalidate>
   <div style="margin-bottom: 1em">
     <button type="submit"
-            [disabled]="heroForm.pristine" class="btn btn-success">Save</button> &nbsp;
+            class="btn btn-success">Save</button> &nbsp;
     <button type="reset" (click)="revert()"
-            [disabled]="heroForm.pristine" class="btn btn-danger">Revert</button>
+            class="btn btn-danger">Revert</button>
   </div>
 
   <!-- Hero Detail Controls -->
@@ -13,45 +13,16 @@
       </label>
   </div>
 
-  <div formArrayName="secretLairs" class="well well-lg">
-    <div *ngFor="let address of secretLairs.controls; let i=index" [formGroupName]="i" >
+  <div class="well well-lg">
+    <div *ngFor="let address of addresses | async; let i=index">
       <!-- The repeated address template -->
-      <button type="button" (click)="onOpenModal(i)" class="btn btn-info" style="margin:10px;">Address #{{i + 1}}</button>
-      <modal #modal>
-          <modal-header [show-close]="true">
-              <h4 class="modal-title">Address #{{i + 1}}</h4>
-          </modal-header>
-          <modal-body>
-			  <div style="margin-left: 1em;">
-				<div class="form-group">
-				  <label class="center-block">Street:
-					<input class="form-control" formControlName="street">
-				  </label>
-				</div>
-				<div class="form-group">
-				  <label class="center-block">City:
-					<input class="form-control" formControlName="city">
-				  </label>
-				</div>
-				<div class="form-group">
-				  <label class="center-block">State:
-					<select class="form-control" formControlName="state">
-					  <option *ngFor="let state of states" [value]="state">{{state}}</option>
-					</select>
-				  </label>
-				</div>
-				<div class="form-group">
-				  <label class="center-block">Zip Code:
-					<input class="form-control" formControlName="zip">
-				  </label>
-				</div>
-			  </div>
-          </modal-body>
-          <modal-footer>
-              <button type="button" class="btn btn-default" data-dismiss="modal" (click)="onDismiss(i)">Cancel</button>
-              <button type="button" class="btn btn-primary" (click)="modal.close()">Ok</button>
-          </modal-footer>
-      </modal>
+      <address-modal #modal
+                    (confirm)="changesMade = true"
+                    [number]="i"
+                    message='This will delete containing folders, do you want to continue?'></address-modal>
+      <button type="button" (click)="modal.open()" class="btn btn-info" style="margin:10px;">
+          Address #{{i + 1}} {{(address.street != '' && address.city != '') ? ': ' + address.street + ', ' + address.city : ''}}
+      </button>                 
       <!-- End of the repeated address template -->
     </div>
     <button (click)="addLair()" type="button" class="btn btn-primary">Add a Secret Lair</button>
@@ -70,6 +41,8 @@
 </form>
 
 <p>heroForm value: {{ heroForm.value | json}}</p>
+
+<p>hero's addresses: {{addresses | async | json}}</p>
 
 <h4>Name change log</h4>
 <div *ngFor="let name of nameChangeLog">{{name}}</div>

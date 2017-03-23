@@ -3,10 +3,11 @@ import { BrowserModule }       from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';  // <-- #1 import module
 
 import { AppComponent }        from './app.component';
-import { HeroDetailComponent } from './hero-detail.component'; // <-- #1 import component
+import { HeroDetailComponent, formGroupContainerProvider } from './hero-detail.component'; // <-- #1 import component
 import { HeroListComponent }   from './hero-list.component';
+import { AddressComponent } from './address/address.component';
 
-import { HeroService }         from './hero.service'; //  <-- #1 import service
+import { HeroService, AddressService }         from './hero.service'; //  <-- #1 import service
 
 import { Ng2Bs3ModalModule } from 'ng2-bs3-modal/ng2-bs3-modal';
 
@@ -19,14 +20,15 @@ import { Ng2Bs3ModalModule } from 'ng2-bs3-modal/ng2-bs3-modal';
   declarations: [
     AppComponent,
     HeroDetailComponent, // <-- #3 declare app component
-    HeroListComponent
+    HeroListComponent,
+    AddressComponent
   ],
   exports: [ // export for the DemoModule
     AppComponent,
     HeroDetailComponent,
     HeroListComponent
   ],
-  providers: [ HeroService ], // <-- #4 provide HeroService
+  providers: [ HeroService, formGroupContainerProvider, HeroDetailComponent, AddressService ], // <-- #4 provide HeroService
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }

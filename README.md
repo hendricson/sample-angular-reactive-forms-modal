@@ -10,4 +10,8 @@ VERSION 1. Original working version from Angular.io
 $ git checkout commit 05f2826
 ```
 
-In the subsequent versions you'll see subforms in their own modal windows.
+VERSION 2. Version with modals, compact but not quite working
+
+```
+$ git checkout commit 308b72b
+```

@@ -1,37 +1,82 @@
-import { Component, Input, OnChanges, ViewChild }       from '@angular/core';
-import { FormArray, FormBuilder, FormGroup }            from '@angular/forms';
+import { Component, Input, forwardRef, OnChanges, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren }       from '@angular/core';
+import { FormArray, FormBuilder, FormGroup,
+  FormControl,
+  ControlContainer,
+  Validators,
+  FormGroupDirective
+ }            from '@angular/forms';
+
+import { Observable }        from 'rxjs/Observable';
 
 import { Address, Hero, states } from './data-model';
-import { HeroService }           from './hero.service';
+import { HeroService, AddressService }           from './hero.service';
 
 import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
+import { AddressComponent } from './address';
+
+
+export abstract class FormControlContainer {
+  abstract addControl(name: string, control: FormControl): void;
+  abstract removeControl(name: string): void;
+}
+
+export const formGroupContainerProvider: any = {
+  provide: FormControlContainer,
+  useExisting: forwardRef(() => HeroDetailComponent)
+};
+
 
 @Component({
   selector: 'hero-detail',
   templateUrl: './hero-detail.component.html'
 })
-export class HeroDetailComponent implements OnChanges {
+export class HeroDetailComponent implements OnChanges, FormControlContainer, OnInit, OnDestroy {
   @Input() hero: Hero;
-
   heroForm: FormGroup;
   nameChangeLog: string[] = [];
   states = states;
+  
+  addresses: Observable<Address[]>;
 
-  @ViewChild('modal') modal: ModalComponent;
+  //@ViewChild('modal') modal: ModalComponent;
+  @ViewChildren('modal') modals: QueryList<ModalComponent>;//ModalComponent[];//
   private _formSnapshot: {}; 
+  private _addingNewItem: boolean = false;
+  
 
   constructor(
     private fb: FormBuilder,
-    private heroService: HeroService) {
+    private heroService: HeroService,
+    private addressService: AddressService) {
 
     this.createForm();
+    //this.ngOnChanges();
+    
+
     this.logNameChange();
+  }
+
+  ngOnInit() {
+    //this.hero.addresses.map((address, i) => /*{console.log('address=');console.log(address);console.log('i=');console.log(i);}*/this.addressService.update(address, i));
+    this.addresses = this.addressService.setAddresses(this.hero);
+
+  }
+
+  ngOnDestroy() {
+    this.addressService.empty();
+  }
+
+  addControl(name: string, control: FormControl): void {
+    this.heroForm.addControl(name, control);
+  }
+
+  removeControl(name: string): void {
+    this.heroForm.removeControl(name);
   }
 
   createForm() {
     this.heroForm = this.fb.group({
       name: '',
-      secretLairs: this.fb.array([]),
       power: '',
       sidekick: ''
     });
@@ -41,63 +86,44 @@ export class HeroDetailComponent implements OnChanges {
     this.heroForm.reset({
       name: this.hero.name
     });
-    this.setAddresses(this.hero.addresses);
+
+    this.addresses = this.addressService.setAddresses(this.hero);
+   
   }
 
   get secretLairs(): FormArray {
     return this.heroForm.get('secretLairs') as FormArray;
   };
 
-  setAddresses(addresses: Address[]) {
-    const addressFGs = addresses.map(address => this.fb.group(address));
-    const addressFormArray = this.fb.array(addressFGs);
-    this.heroForm.setControl('secretLairs', addressFormArray);
-  }
-
   addLair() {
-    this.secretLairs.push(this.fb.group(new Address()));
-  }
+    //this.secretLairs.push(this.fb.group(new Address()));
+    this.addressService.getAddresses().subscribe(result => {
+      this.addressService.update(new Address(), result.length);
+      this.addressService.getAddresses().subscribe(hello => this.modals.last.open());
+    });
 
-  onClose() {
-    this.modal.close();
-  }
-
-  onDismiss(i: number) {
-    for (let control in this.heroForm.controls['secretLairs']['controls'][i].controls) {
-      this.heroForm.controls['secretLairs']['controls'][i].controls[control].setValue(this._formSnapshot[control]);
-    }
-    this.modal.dismiss();
-  }
-
-  onOpenModal(i:number) {
-    const formModel = this.heroForm.value;
-    this._formSnapshot = formModel.secretLairs[i];
-    this.modal.open();
   }
 
   onSubmit() {
-    this.hero = this.prepareSaveHero();
-    this.heroService.updateHero(this.hero).subscribe(/* error handling */);
-    this.ngOnChanges();
-  }
+    console.log('onSubmit() clicked!');
 
-  prepareSaveHero(): Hero {
-    const formModel = this.heroForm.value;
+    //or try f.map(res => res.map(v => myFunction(v)))
+    this.addressService.getAddresses().subscribe(result => {
+      
+      const formModel = this.heroForm.value;
 
-    // deep copy of form model lairs
-    const secretLairsDeepCopy: Address[] = formModel.secretLairs.map(
-      (address: Address) => Object.assign({}, address)
-    );
+      // return new `Hero` object containing a combination of original hero value(s)
+      // and deep copies of changed form model values
+      this.hero = {
+        id: this.hero.id,
+        name: formModel.name as string,
+        // addresses: formModel.secretLairs // <-- bad!
+        addresses: result
+      };
+      this.heroService.updateHero(this.hero).subscribe(/* error handling */);
+      this.ngOnChanges();
+    });
 
-    // return new `Hero` object containing a combination of original hero value(s)
-    // and deep copies of changed form model values
-    const saveHero: Hero = {
-      id: this.hero.id,
-      name: formModel.name as string,
-      // addresses: formModel.secretLairs // <-- bad!
-      addresses: secretLairsDeepCopy
-    };
-    return saveHero;
   }
 
   revert() { this.ngOnChanges(); }

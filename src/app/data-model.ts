@@ -11,6 +11,8 @@ export class Address {
   zip    = '';
 }
 
+export const addresses: Address[] = [];
+
 export const heroes: Hero[] = [
   {
     id: 1,

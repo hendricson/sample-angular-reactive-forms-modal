@@ -1,0 +1,36 @@
+      <modal #modal>
+          <modal-header [show-close]="true">
+              <h4 class="modal-title">Address #{{number + 1}}</h4>
+          </modal-header>
+          <modal-body>
+			  <div style="margin-left: 1em;" [formGroup]="addressForm">
+				<div class="form-group">
+				  <label class="center-block">Street:
+					<input class="form-control" formControlName="street" ><!-- [(ngModel)]="this.address.street" -->
+				  </label>
+				</div>
+				<div class="form-group">
+				  <label class="center-block">City:
+					<input class="form-control" formControlName="city">
+				  </label>
+				</div>
+				<div class="form-group">
+				  <label class="center-block">State:
+					<select class="form-control" formControlName="state">
+					  <option *ngFor="let state of states" [value]="state">{{state}}</option>
+					</select>
+				  </label>
+				</div>
+				<div class="form-group">
+				  <label class="center-block">Zip Code:
+					<input class="form-control" formControlName="zip">
+				  </label>
+				</div>
+				
+			  </div>
+          </modal-body>
+          <modal-footer>
+              <button type="button" class="btn btn-default" data-dismiss="modal" (click)="cancelStream($event)">Cancel</button>
+              <button type="button" class="btn btn-primary" (click)="confirmStream($event)">OK</button>
+          </modal-footer>
+      </modal>
